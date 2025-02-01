@@ -11,10 +11,29 @@ POSTS = [
     {"id": 3, "title": "Flask Tutorial", "content": "Learn Flask step by step."},
 ]
 
-# Route: Alle Posts abrufen (GET)
+# Route: Alle Posts abrufen (GET) mit Sortierfunktion
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
-    return jsonify(POSTS)
+    # Abrufen der Query-Parameter
+    sort_field = request.args.get('sort')  # z. B. 'title' oder 'content'
+    sort_direction = request.args.get('direction', 'asc')  # Standard: 'asc'
+
+    # Validierung der Sortierparameter
+    if sort_field and sort_field not in ['title', 'content']:
+        return jsonify({"error": f"Invalid sort field: {sort_field}. Must be 'title' or 'content'."}), 400
+
+    if sort_direction not in ['asc', 'desc']:
+        return jsonify({"error": f"Invalid sort direction: {sort_direction}. Must be 'asc' or 'desc'."}), 400
+
+    # Kopiere die ursprüngliche Liste der Posts
+    sorted_posts = POSTS.copy()
+
+    # Anwenden der Sortierung, falls Parameter angegeben sind
+    if sort_field:
+        reverse = (sort_direction == 'desc')  # Umkehrung für absteigende Sortierung
+        sorted_posts.sort(key=lambda post: post[sort_field].lower(), reverse=reverse)
+
+    return jsonify(sorted_posts), 200
 
 # Route: Neuen Post hinzufügen (POST)
 @app.route('/api/posts', methods=['POST'])
