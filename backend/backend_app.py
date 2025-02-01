@@ -10,12 +10,10 @@ POSTS = [
     {"id": 2, "title": "Second Post", "content": "This is the second post."},
 ]
 
-
 # Route: Alle Posts abrufen (GET)
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
     return jsonify(POSTS)
-
 
 # Route: Neuen Post hinzufügen (POST)
 @app.route('/api/posts', methods=['POST'])
@@ -38,7 +36,6 @@ def add_post():
     POSTS.append(new_post)
     return jsonify(new_post), 201
 
-
 # Route: Einen Post löschen (DELETE)
 @app.route('/api/posts/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
@@ -51,6 +48,25 @@ def delete_post(post_id):
     POSTS = [post for post in POSTS if post["id"] != post_id]
     return jsonify({"message": f"Post with id {post_id} has been deleted successfully."}), 200
 
+# Route: Einen Post aktualisieren (PUT)
+@app.route('/api/posts/<int:post_id>', methods=['PUT'])
+def update_post(post_id):
+    global POSTS
+    post_to_update = next((post for post in POSTS if post["id"] == post_id), None)
+
+    if not post_to_update:
+        return jsonify({"error": f"Post with id {post_id} not found"}), 404
+
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "Invalid input"}), 400
+
+    # Aktualisiere Felder nur, wenn sie im JSON-Body vorhanden sind
+    post_to_update["title"] = data.get("title", post_to_update["title"])
+    post_to_update["content"] = data.get("content", post_to_update["content"])
+
+    return jsonify(post_to_update), 200
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002, debug=True)
