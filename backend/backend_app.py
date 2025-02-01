@@ -8,6 +8,7 @@ CORS(app)  # Aktiviert CORS für alle Routen
 POSTS = [
     {"id": 1, "title": "First Post", "content": "This is the first post."},
     {"id": 2, "title": "Second Post", "content": "This is the second post."},
+    {"id": 3, "title": "Flask Tutorial", "content": "Learn Flask step by step."},
 ]
 
 # Route: Alle Posts abrufen (GET)
@@ -67,6 +68,20 @@ def update_post(post_id):
     post_to_update["content"] = data.get("content", post_to_update["content"])
 
     return jsonify(post_to_update), 200
+
+# Route: Posts suchen (GET)
+@app.route('/api/posts/search', methods=['GET'])
+def search_posts():
+    title_query = request.args.get('title', '').lower()
+    content_query = request.args.get('content', '').lower()
+
+    filtered_posts = [
+        post for post in POSTS
+        if (title_query in post['title'].lower() or not title_query) and
+           (content_query in post['content'].lower() or not content_query)
+    ]
+
+    return jsonify(filtered_posts), 200
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002, debug=True)
